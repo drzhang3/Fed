@@ -4,7 +4,6 @@ from tqdm import tqdm
 import argparse
 import numpy as np
 import random
-
 from client import Clients
 from edge import Edges
 
@@ -12,20 +11,20 @@ from edge import Edges
 def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
-    torch.manual_seed(seed)  # cpu
-    torch.cuda.manual_seed_all(seed)  # 并行gpu
-    torch.backends.cudnn.deterministic = True  # cpu/gpu结果一致
-    torch.backends.cudnn.benchmark = True  # 训练集变化不大时使训练加速
+    torch.manual_seed(seed)  
+    torch.cuda.manual_seed_all(seed)  
+    torch.backends.cudnn.deterministic = True  
+    torch.backends.cudnn.benchmark = True  
 
 
 def get_parse():
     # parser for hyperparameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--edge_num', type=int, default=10)
-    parser.add_argument('--client_num', type=int, default=100)
-    parser.add_argument('--ratio1', type=float, default=0.3, help='The ratio of chosen edges')
-    parser.add_argument('--ratio2', type=float, default=0.8, help='The ratio of chosen client per edge')
+    parser.add_argument('--edge_num', type=int, default=1)
+    parser.add_argument('--client_num', type=int, default=1)
+    parser.add_argument('--ratio1', type=float, default=1, help='The ratio of chosen edges')
+    parser.add_argument('--ratio2', type=float, default=1, help='The ratio of chosen client per edge')
     parser.add_argument('--optim', default='adam', type=str, help='optimizer')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum term')
     parser.add_argument('--beta1', default=0.9, type=float, help='Adam coefficients beta_1')
@@ -56,12 +55,6 @@ def create_optimizer(args, model_params):
         raise ValueError('unknown optimizer')
 
 
-def run_global_test(edge, global_vars):
-    edge.set_global_vars(global_vars)
-    acc, loss = edge.run_test(device=device)
-    return acc, loss
-
-
 if __name__ == '__main__':
     args = get_parse()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -74,7 +67,7 @@ if __name__ == '__main__':
         random_edges = edge.choose_edges(args.ratio1)
         for edge_id in tqdm(random_edges, ascii=True):
             edge.set_global_vars(global_vars)
-            train_acc, train_loss = edge.train_epoch(edge_id=edge_id, optimizer=optimizer, device=device)
+            train_acc, train_loss = edge.train_epoch(edge_id=edge_id, optimizer=optimizer, ratio2=args.ratio2, device=device)
             print(("[epoch {} ] edge_id:{}, Training Acc: {:.4f}, Loss: {:.4f}".format(
                 epoch, edge_id, train_acc, train_loss)))
             current_edge_vars = edge.get_edge_vars()
@@ -88,7 +81,8 @@ if __name__ == '__main__':
         for var in edge_vars_sum:
             global_vars.append(var / len(random_edges))
 
-        test_acc, test_loss = run_global_test(edge, global_vars)
+        edge.set_global_vars(global_vars)
+        test_acc, test_loss = edge.run_test(device=device)
         print("[epoch {} ] Testing Acc: {:.4f}, Loss: {:.4f}".format(
             epoch, test_acc, test_loss))
 

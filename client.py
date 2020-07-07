@@ -62,9 +62,10 @@ class Clients:
         return self.model.parameters()
 
     def set_edge_vars(self, edge_vars):
-        all_vars = self.model.parameters()
-        for variable, value in zip(all_vars, edge_vars):
-            variable.data = value.data
+        self.model.load_state_dict(edge_vars)
+        # all_vars = self.model.parameters()
+        # for variable, value in zip(all_vars, edge_vars):
+        #     variable.data = value.data
 
     def choose_clients(self, ratio2):
         choose_num = math.floor(self.client_num_per_edge * ratio2)

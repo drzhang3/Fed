@@ -5,6 +5,7 @@ import argparse
 import numpy as np
 import random
 from edge import Edges
+from utils import FedAvg
 
 
 def setup_seed(seed):
@@ -58,11 +59,13 @@ if __name__ == '__main__':
     args = get_parse()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     edge = Edges(args.num_classes, args.edge_num, args.client_num, args.bs, device)
-    global_vars = edge.get_edge_vars()
+    global_vars = edge.model.state_dict()
+    # edge.get_edge_vars()
     optimizer = create_optimizer(args, edge.model.parameters())
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[150, 300], gamma=0.1)
     for epoch in range(1, args.epochs):
-        edge_vars_sum = None
+        # edge_vars_sum = None
+        edge_vars_sum = []
         random_edges = edge.choose_edges(args.ratio1)
         for edge_id in tqdm(random_edges, ascii=True):
             edge.set_global_vars(global_vars)
@@ -71,16 +74,17 @@ if __name__ == '__main__':
                 epoch, edge_id, train_acc, train_loss)))
             # current_edge_vars = edge.get_edge_vars()
             current_edge_vars = edge.edge_vars
-            if edge_vars_sum is None:
-                edge_vars_sum = current_edge_vars
-            else:
-                for cv, ccv in zip(edge_vars_sum, current_edge_vars):
-                    cv = cv + ccv
-
-        global_vars = []
-        for var in edge_vars_sum:
-            global_vars.append(var / len(random_edges))
-
+            edge_vars_sum.append(current_edge_vars)
+        #     if edge_vars_sum is None:
+        #         edge_vars_sum = current_edge_vars
+        #     else:
+        #         for cv, ccv in zip(edge_vars_sum, current_edge_vars):
+        #             cv = cv + ccv
+        #
+        # global_vars = []
+        # for var in edge_vars_sum:
+        #     global_vars.append(var / len(random_edges))
+        global_vars = FedAvg(edge_vars_sum)
         edge.set_vars(global_vars)
         test_acc, test_loss = edge.run_test(device=device)
         print("[epoch {} ] Testing Acc: {:.4f}, Loss: {:.4f}".format(

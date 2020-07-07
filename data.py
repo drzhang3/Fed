@@ -27,16 +27,18 @@ def build_dataset():
 
 
 class DataSet:
-    def __init__(self, split, batch_size):
+    def __init__(self, edge_num, client_num_per_edge, batch_size):
         trainset, testset = build_dataset()
-        if split == 0:
-            self.train = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True,
-                                                     num_workers=2)
-        else:
-            client_data_list = torch.utils.data.random_split(trainset, [len(trainset) // split for _ in range(split)])
-            self.train = [torch.utils.data.DataLoader(clien_data, batch_size=batch_size, shuffle=True,
-                                                      num_workers=2) for clien_data in client_data_list]
+        edge_data_list = torch.utils.data.random_split(trainset, [len(trainset) // edge_num for _ in range(edge_num)])
+        client_data_list = [torch.utils.data.random_split(edge_data, [len(edge_data) // client_num_per_edge for _ in
+                                                                      range(client_num_per_edge)]) for edge_data in
+                            edge_data_list]
+        self.train = [[torch.utils.data.DataLoader(client_data_list[i][j], batch_size=batch_size, shuffle=True) for j in
+                       range(client_num_per_edge)] for i in range(edge_num)]
+        self.test = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False)
+        del client_data_list
 
-        self.test = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-# dataset = DataSet(10, 64)
+# dataset = DataSet(10, 10, 64)
+# print(len(dataset.train))
+# print(len(dataset.train[0]))

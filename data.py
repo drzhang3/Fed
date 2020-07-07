@@ -38,7 +38,6 @@ class DataSet:
         self.test = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False)
         del client_data_list
 
-
 # dataset = DataSet(10, 10, 64)
 # print(len(dataset.train))
 # print(len(dataset.train[0]))

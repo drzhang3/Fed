@@ -22,10 +22,10 @@ def get_parse():
     # parser for hyperparameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--edge_num', type=int, default=100)
-    parser.add_argument('--client_num', type=int, default=1000)
-    parser.add_argument('--ratio1', type=int, default=0.01, help='The ratio of chosen edges')
-    parser.add_argument('--ratio2', type=int, default=0.1, help='The ratio of chosen client per edge')
+    parser.add_argument('--edge_num', type=int, default=10)
+    parser.add_argument('--client_num', type=int, default=100)
+    parser.add_argument('--ratio1', type=int, default=0.3, help='The ratio of chosen edges')
+    parser.add_argument('--ratio2', type=int, default=0.8, help='The ratio of chosen client per edge')
     parser.add_argument('--optim', default='adam', type=str, help='optimizer')
     parser.add_argument('--momentum', default=0.9, type=float, help='momentum term')
     parser.add_argument('--beta1', default=0.9, type=float, help='Adam coefficients beta_1')
@@ -33,8 +33,8 @@ def get_parse():
     parser.add_argument('--weight_decay', default=5e-4, type=float,
                         help='weight decay for optimizers')
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--bs', type=int, default=64)
-    parser.add_argument('--epochs', type=int, default=150)
+    parser.add_argument('--bs', type=int, default=128)
+    parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--num_classes', type=int, default=10, help='cifar10')
     args = parser.parse_args()
     return args
@@ -60,7 +60,6 @@ def run_global_test(edge, global_vars):
     edge.set_global_vars(global_vars)
     acc, loss = edge.run_test(device=device)
     return acc, loss
-
 
 
 if __name__ == '__main__':

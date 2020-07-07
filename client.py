@@ -2,21 +2,17 @@ import torch
 import numpy as np
 from collections import namedtuple
 import math
-
 from model import ResNet34
 from data import DataSet
-
-FedModel = namedtuple('FedModel', 'X Y DROP_RATE train_op loss_op acc_op')
 
 
 class Clients:
     def __init__(self, num_classes, batch_size, clients_num, device):
-        self.model = ResNet34(num_classes)
+        self.model = ResNet34(num_classes).to(device)
         self.bs = batch_size
         self.clients_num = clients_num
         self.dataset = DataSet(clients_num, self.bs)
         self.criterion = torch.nn.CrossEntropyLoss()
-
 
     def run_test(self, device):
         self.model.eval()
@@ -59,6 +55,7 @@ class Clients:
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             accuracy = 100. * correct / total
+        return accuracy, train_loss
 
     def get_client_vars(self):
         return self.model.parameters()

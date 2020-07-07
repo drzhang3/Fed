@@ -71,13 +71,15 @@ if __name__ == '__main__':
     client = buildClients(args, device)
     global_vars = client.get_client_vars()
     optimizer = create_optimizer(args, client.model.parameters())
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[50, 100], gamma=0.1)
+    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[150, 300], gamma=0.1)
     for epoch in range(1, args.epochs):
         client_vars_sum = None
         random_clients = client.choose_clients()
         for client_id in tqdm(random_clients, ascii=True):
             client.set_global_vars(global_vars)
-            client.train_epoch(cid=client_id, optimizer=optimizer, device=device)
+            train_acc, train_loss = client.train_epoch(cid=client_id, optimizer=optimizer, device=device)
+            print(("[epoch {} ] Client_id:{}, Training Acc: {:.4f}, Loss: {:.4f}".format(
+                epoch, client_id, train_acc, train_loss)))
             current_client_vars = client.get_client_vars()
             if client_vars_sum is None:
                 client_vars_sum = current_client_vars
@@ -89,9 +91,9 @@ if __name__ == '__main__':
         for var in client_vars_sum:
             global_vars.append(var / len(random_clients))
 
-        acc, loss = run_global_test(client, global_vars)
-        print("[epoch {} ] Testing ACC: {:.4f}, Loss: {:.4f}".format(
-            epoch + 1, acc, loss))
+        test_acc, test_loss = run_global_test(client, global_vars)
+        print("[epoch {} ] Testing Acc: {:.4f}, Loss: {:.4f}".format(
+            epoch, test_acc, test_loss))
 
         scheduler.step()
     run_global_test(client, global_vars)

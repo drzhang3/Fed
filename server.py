@@ -4,7 +4,6 @@ from tqdm import tqdm
 import argparse
 import numpy as np
 import random
-from client import Clients
 from edge import Edges
 
 
@@ -70,7 +69,8 @@ if __name__ == '__main__':
             train_acc, train_loss = edge.train_epoch(edge_id=edge_id, optimizer=optimizer, ratio2=args.ratio2, device=device)
             print(("[epoch {} ] edge_id:{}, Training Acc: {:.4f}, Loss: {:.4f}".format(
                 epoch, edge_id, train_acc, train_loss)))
-            current_edge_vars = edge.get_edge_vars()
+            # current_edge_vars = edge.get_edge_vars()
+            current_edge_vars = edge.edge_vars
             if edge_vars_sum is None:
                 edge_vars_sum = current_edge_vars
             else:
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         for var in edge_vars_sum:
             global_vars.append(var / len(random_edges))
 
-        edge.set_global_vars(global_vars)
+        edge.set_vars(global_vars)
         test_acc, test_loss = edge.run_test(device=device)
         print("[epoch {} ] Testing Acc: {:.4f}, Loss: {:.4f}".format(
             epoch, test_acc, test_loss))

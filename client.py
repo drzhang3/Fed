@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from collections import namedtuple
 import math
 from model import ResNet34
 from data import DataSet

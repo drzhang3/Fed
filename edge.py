@@ -1,10 +1,6 @@
-import torch
 import numpy as np
 import math
-from model import ResNet34
-from data import DataSet
 from client import Clients
-import tqdm
 
 
 class Edges:
@@ -17,7 +13,8 @@ class Edges:
         self.model = self.client.model
 
     def train_epoch(self, edge_id, optimizer, ratio2, device):
-        edge_vars = self.client.get_client_vars()
+        # edge_vars = self.client.get_client_vars()
+        edge_vars = self.edge_vars
         client_vars_sum = None
         random_clients = self.client.choose_clients(ratio2)
         for client_id in random_clients:
@@ -32,7 +29,8 @@ class Edges:
         edge_vars = []
         for var in client_vars_sum:
             edge_vars.append(var / len(random_clients))
-        self.client.set_edge_vars(edge_vars)
+        self.edge_vars = edge_vars
+        # self.client.set_edge_vars(edge_vars)
         return train_acc, train_loss
 
     def run_test(self, device):
@@ -43,7 +41,10 @@ class Edges:
         return self.client.get_client_vars()
 
     def set_global_vars(self, edge_vars):
-        self.client.set_edge_vars(edge_vars)
+        self.edge_vars = edge_vars
+
+    def set_vars(self, global_vars):
+        self.edge_vars = global_vars
 
     def choose_edges(self, ratio1):
         choose_num = math.floor(self.edge_num * ratio1)

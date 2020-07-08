@@ -18,7 +18,7 @@ See the arguments in [main.py](main.py).
 For example:
 > python main.py --edge_num=10 --client_num=100 --ratio1=0.5 --ratio2=0.3 --optim=adam --lr=0.001 --bs=128
 
-Note: We only consider IID setting in CIFAR10.
+Note: We only consider IID setting on CIFAR10.
 
 
 

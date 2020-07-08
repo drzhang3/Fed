@@ -3,7 +3,9 @@ import torch.optim as optim
 import argparse
 import numpy as np
 import random
+import os
 from src.cloud import Cloud
+import matplotlib.pyplot as plt
 
 
 def setup_seed(seed):
@@ -54,8 +56,17 @@ def create_optimizer(args, model_params):
         raise ValueError('unknown optimizer')
 
 
+def plot(curve, name):
+    plt.figure()
+    plt.xlabel('Epoch')
+    plt.ylabel('Training loss')
+    plt.plot(curve)
+    plt.legend()
+    plt.savefig('figure/{}.png'.format(name))
+
+
 if __name__ == '__main__':
-    
+
     args = get_parse()
     if args.fixed_seed:
         setup_seed(args.seed)
@@ -64,4 +75,13 @@ if __name__ == '__main__':
     cloud = Cloud(args.num_classes, args.edge_num, args.client_num, args.bs, device)
     optimizer = create_optimizer(args, cloud.model.parameters())
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[150, 300], gamma=0.1)
-    cloud.train(optimizer, scheduler, args.epochs, args.ratio1, args.ratio1, device)
+    train_loss, train_acc, test_loss, test_acc = cloud.train(optimizer, scheduler, args.epochs, args.ratio1,
+                                                             args.ratio1, device)
+
+    if not os.path.isdir('curve'):
+        os.mkdir('curve')
+    name = 'fed-edge{}-client{}_{}_C{}'.format(args.edge_num, args.client_num, args.ratio1, args.ratio2)
+    torch.save({'train_loss': train_loss, 'train_accuracy': train_acc,
+                'test_loss': test_loss, 'test_accuracy': test_acc}, name)
+
+    plot(train_loss, name)

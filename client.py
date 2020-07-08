@@ -38,6 +38,7 @@ class Clients:
         return accuracy, test_loss
 
     def train_epoch(self, edge_id, client_id, optimizer, device):
+        self.model.train()
         client_train_data_loader = self.dataset.train[edge_id][client_id]
         train_loss = 0
         correct = 0
@@ -56,17 +57,14 @@ class Clients:
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             accuracy = 100. * correct / total
-        return accuracy, train_loss
+        return accuracy, train_loss, self.model.state_dict()
 
     def get_client_vars(self):
-        return self.model.parameters()
+        return self.model.state_dict()
 
     def set_edge_vars(self, edge_vars):
         self.model.load_state_dict(edge_vars)
-        # all_vars = self.model.parameters()
-        # for variable, value in zip(all_vars, edge_vars):
-        #     variable.data = value.data
-
+        
     def choose_clients(self, ratio2):
         choose_num = math.floor(self.client_num_per_edge * ratio2)
         return np.random.permutation(self.client_num_per_edge)[:choose_num]

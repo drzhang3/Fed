@@ -19,6 +19,7 @@ def get_parse():
     # parser for hyperparameters
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--fixed_seed', type=bool, default=False)
     parser.add_argument('--edge_num', type=int, default=1)
     parser.add_argument('--client_num', type=int, default=1)
     parser.add_argument('--ratio1', type=float, default=1, help='The ratio of chosen edges')
@@ -54,7 +55,10 @@ def create_optimizer(args, model_params):
 
 
 if __name__ == '__main__':
+    
     args = get_parse()
+    if args.fixed_seed:
+        setup_seed(args.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     cloud = Cloud(args.num_classes, args.edge_num, args.client_num, args.bs, device)

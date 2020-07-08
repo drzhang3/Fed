@@ -3,7 +3,7 @@ import torch.optim as optim
 import argparse
 import numpy as np
 import random
-from cloud import Cloud
+from src.cloud import Cloud
 
 
 def setup_seed(seed):

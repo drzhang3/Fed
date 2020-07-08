@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import math
 from model import ResNet34
-from data import DataSet
+from util.data import DataSet
 
 
 class Clients:

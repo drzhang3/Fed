@@ -4,9 +4,8 @@ from tqdm import tqdm
 import argparse
 import numpy as np
 import random
-from edge import Edges
-from utils import FedAvg
-import copy
+from src.edge import Edges
+from util.fedavg import FedAvg
 
 
 def setup_seed(seed):

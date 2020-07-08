@@ -1,5 +1,5 @@
-from edge import Edges
-from utils import FedAvg
+from src.edge import Edges
+from util.fedavg import FedAvg
 
 
 class Cloud:

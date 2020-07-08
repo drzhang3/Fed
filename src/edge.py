@@ -1,7 +1,7 @@
 import numpy as np
 import math
-from client import Clients
-from utils import FedAvg
+from src.client import Clients
+from util.fedavg import FedAvg
 
 
 class Edges:

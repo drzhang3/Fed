@@ -6,9 +6,10 @@ from util.data import DataSet
 
 
 class Clients:
-    def __init__(self, num_classes, edge_num, client_num, batch_size, device):
+    def __init__(self, num_classes, edge_num, client_num, batch_size, client_epochs, device):
         self.model = ResNet34(num_classes).to(device)
         self.bs = batch_size
+        self.client_epochs = client_epochs
         self.clients_num = client_num
         self.edge_num = edge_num
         self.client_num_per_edge = client_num // edge_num
@@ -35,7 +36,7 @@ class Clients:
                 test_loss += loss.item()
 
         accuracy = 100. * correct / total
-        return accuracy, test_loss
+        return test_loss, accuracy
 
     def train_epoch(self, edge_id, client_id, optimizer, device):
         self.model.train()
@@ -58,6 +59,11 @@ class Clients:
             correct += predicted.eq(targets).sum().item()
             accuracy = 100. * correct / total
         return accuracy, train_loss, self.model.state_dict()
+    
+    def train_epochs(self, edge_id, client_id, optimizer, device):
+        for epoch in range(self.client_epochs):
+            train_acc, train_loss, current_client_vars = self.train_epoch(edge_id, client_id, optimizer, device)
+        return train_acc, train_loss, current_client_vars
 
     def get_client_vars(self):
         return self.model.state_dict()

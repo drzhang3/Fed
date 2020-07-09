@@ -59,7 +59,7 @@ class Clients:
             correct += predicted.eq(targets).sum().item()
             accuracy = 100. * correct / total
         return accuracy, train_loss, self.model.state_dict()
-    
+
     def train_epochs(self, edge_id, client_id, optimizer, device):
         for epoch in range(self.client_epochs):
             train_acc, train_loss, current_client_vars = self.train_epoch(edge_id, client_id, optimizer, device)
@@ -70,7 +70,7 @@ class Clients:
 
     def set_edge_vars(self, edge_vars):
         self.model.load_state_dict(edge_vars)
-        
+
     def choose_clients(self, ratio2):
         choose_num = math.floor(self.client_num_per_edge * ratio2)
         return np.random.permutation(self.client_num_per_edge)[:choose_num]

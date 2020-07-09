@@ -8,7 +8,6 @@ from src.cloud import Cloud
 from src.edge import Edges
 from src.client import Clients
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 
 
 def setup_seed(seed):
@@ -72,9 +71,10 @@ def plot(curve, name):
 
 
 def reduce_dim(vector):
-    #TODO
-    
-    
+    # TODO
+    pass
+
+
 if __name__ == '__main__':
 
     args = get_parse()
@@ -86,25 +86,24 @@ if __name__ == '__main__':
     client = Clients(args.num_classes, args.edge_num, args.client_num, args.bs, args.client_epochs, device)
     edge = Edges(client, args.num_classes, args.edge_num, args.client_num, args.bs, args.edge_epochs, device)
     cloud = Cloud(edge, args.num_classes, args.edge_num, args.client_num, args.bs, device)
-    
+
     optimizer = create_optimizer(args, cloud.model.parameters())
     scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=[150, 300], gamma=0.1)
-    
+
     train_losses, train_accuracies = [], []
     test_losses, test_accuracies = [], []
 
-    
     for epoch in range(0, args.epochs):
         print('\nEpoch: %d' % epoch)
         train_loss, train_acc = cloud.train_epoch(optimizer, args.ratio1,
-                                                             args.ratio1, device)
+                                                  args.ratio1, device)
         vector = cloud.get_cloud_and_edges  # [<class 'collections.OrderedDict'>]
         reduce_dim(vector)
         print("Training Acc: {:.4f}, Loss: {:.4f}".format(train_acc, train_loss))
         test_acc, test_loss = cloud.run_test(device=device)
         print("Testing Acc: {:.4f}, Loss: {:.4f}".format(test_acc, test_loss))
         scheduler.step()
-        
+
         # save loss and acc
         train_losses.append(train_loss)
         train_accuracies.append(train_acc)
@@ -113,7 +112,7 @@ if __name__ == '__main__':
 
         if not os.path.isdir('curve'):
             os.mkdir('curve')
-        
+
         torch.save({'train_loss': train_loss, 'train_accuracy': train_acc,
                     'test_loss': test_loss, 'test_accuracy': test_acc}, os.path.join('curve', name))
 
